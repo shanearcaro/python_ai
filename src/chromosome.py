@@ -1,58 +1,42 @@
-from __future__ import annotations
-import random
-
 from gene import Gene
 
 
 class Chromosome:
-    """Represents an individual within a population"""
+    """Representation of a chromosome within a population"""
 
-    def __init__(self, length=5, genes: list[Chromosome] = None):
-        if genes:
-            self.genes = genes
+    def __init__(self, gene_length=10, genes: list[Gene] = []):
+        self.genes = genes
+
+        # Check if genes list is provided
+        if self.genes:
+            self.gene_length = len(self.genes)
         else:
-            self.genes = [Gene() for _ in range(length)]
-        self.fitness = 0.0
+            self.__randomize(gene_length=gene_length)
 
-    def calculate_fitness(self, target: Chromosome):
-        """Calculate the fitness of this entity against a target"""
-        # Verify target and chromosome have same length
-        if len(self.genes) != len(target):
-            raise ValueError(f'Target must be size {len(self.genes)}')
-        
-        self.fitness = sum([1 if self.genes[index].allele == str(target[index]) else 0
-                            for index in range(0, len(self.genes))])
-        
-        print("Caulculated fitness:", self.fitness)
+    def __randomize(self, gene_length=None):
+        """Generate a chromosome with random genes"""
+        if gene_length is None:
+            if self.gene_length == 0:
+                raise ValueError('Cannot generate a random chromosome with length 0')
+        else:
+            self.gene_length = gene_length
 
-    def crossover(self, target: Chromosome):
-        """Create two offspring entities"""
-        # Calculate crossoverpoint
-        crossover_point = random.randint(0, len(self.genes) - 1)
-        print("Crossover point:", crossover_point)
+        # Generate the random genes
+        self.genes = [Gene() for _ in range(self.gene_length)]
 
-        # Get father and mother switch points
-        father_slice = self.genes[:crossover_point]
-        mother_slice = target.genes[crossover_point:]
+    def snip(self, low, high):
+        """Snip a sequency of genes from a chromosome"""
+        return self.genes[low:high]
 
-        print("Father slice:", "".join([e.allele for e in father_slice]))
-        print("Mother slice:", "".join([e.allele for e in mother_slice]))
+    def calculate_fitness(self, target: None):
+        """Calculate the fitness against a target"""
+        if not self.genes:
+            raise ValueError('Cannot calculate fitness for empty chromosome')
 
-        # Generate two kids as offspring
-        son = Chromosome(genes=mother_slice + self.genes[crossover_point:])
-        daughter = Chromosome(genes=father_slice + target.genes[crossover_point:])
+        if target is None:
+            raise ValueError('Target cannot be None to calculate fitness')
 
-        return son, daughter
+        return [gene.allel for gene in self.genes].count('1')
 
-    def mutate(self, rate=0.01):
-        """Mutate a random gene within a chromosome by the mutation rate"""
-        for index in range(len(self.genes)):
-            # If success, flip gene
-            if random.random() < rate:
-                self.genes[index].allele = '1' if self.genes[index].allele == '0' else '0'
-
-    def __str__(self) -> str:
-        ret = ''
-        for gene in self.genes:
-            ret += str(gene)
-        return ret
+    def __str__(self):
+        return "".join([str(gene) for gene in self.genes])
