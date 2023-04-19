@@ -10,18 +10,24 @@ class Snake:
         self.body = [head]
         self.is_alive = True
         self.size = self.head.size
+        self.length = 1
 
         self.apple = Entity(-self.size, -self.size, self.size, (255, 0, 0))
 
         self.width: int | None = None
         self.height: int | None = None
 
+        self.energy = 100
+
+    def reset_energy(self):
+        self.energy = min(100 + self.length * 5, 250)
+
     def set_boundaries(self, width: int, height: int) -> None:
         """Define the playable area for the snake"""
         self.width = width
         self.height = height
 
-    def in_bounds(self):
+    def in_bounds(self) -> bool:
         """Verify the head is in bounds"""
         # Width and height must be implemented
         if self.width is None or self.height is None:
@@ -98,7 +104,9 @@ class Snake:
                     locations.append((x, y))
 
         # Set new position
-        new_x, new_y = locations[random.randint(0, len(locations))]
+        if len(locations) == 0:
+            self.is_alive = False
+        new_x, new_y = locations[random.randint(0, len(locations) - 1)]
         self.apple.update_position(new_x, new_y)
 
     def reset(self) -> None:
@@ -108,6 +116,7 @@ class Snake:
 
         self.tail = self.head
         self.head.next = None
+        self.length = 1
 
         self.spawn_apple()
 
@@ -122,6 +131,7 @@ class Snake:
 
         # Add element to body
         self.body.append(entity)
+        self.length += 1
 
     def __str__(self) -> str:
         output = ''
