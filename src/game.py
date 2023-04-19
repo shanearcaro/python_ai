@@ -39,33 +39,48 @@ class Game:
 
         # Spawn the apple
         self.snake.spawn_apple()
+        # self.snake.apple.x = 400
+        # self.snake.apple.y = 100
 
         # Stops snake from moving initially
-        # self.direction = Direction.NONE
+        self.direction = Direction.NONE
 
     def distance(self, head: Entity, apple: Entity):
         head_center = (head.x + head.size / 2, head.y + head.size / 2)
         apple_center = (apple.x + apple.size / 2, apple.y + apple.size / 2)
 
-        return math.sqrt((apple_center[0] - head_center[0]) ** 2 + (apple_center[1] - head_center[1]) ** 2)
+        dx = apple_center[0] - head_center[0]
+        dy = apple_center[1] - head_center[1]
+
+        return math.sqrt(dx**2 + dy**2)
+
+    def angle(self, head: Entity, apple: Entity):
+        head_center = (head.x + head.size / 2, head.y + head.size / 2)
+        apple_center = (apple.x + apple.size / 2, apple.y + apple.size / 2)
+
+        dx = apple_center[0] - head_center[0]
+        dy = apple_center[1] - head_center[1]
+
+        return math.atan2(dy, dx)
 
     def take_action(self, action):
         """Provide an action to the game"""
-        if action == 0:
-            self.snake.update(Direction.NORTH)
-        if action == 1:
-            self.snake.update(Direction.SOUTH)
-        if action == 2:
-            self.snake.update(Direction.EAST)
-        if action == 3:
-            self.snake.update(Direction.WEST)
+        if action == 0 and self.direction != Direction.SOUTH:
+            self.direction = Direction.NORTH
+        if action == 1 and self.direction != Direction.NORTH:
+            self.direction = Direction.SOUTH
+        if action == 2 and self.direction != Direction.WEST:
+            self.direction = Direction.EAST
+        if action == 3 and self.direction != Direction.EAST:
+            self.direction = Direction.WEST
 
+        self.snake.update(self.direction)
         self.moves += 1
         self.snake.energy -= 1
 
     def get_state(self):
         distances = self.get_wall_distance()
-        return (self.snake.apple.x, self.snake.apple.y, self.snake.head.x, self.snake.head.y,
+        return (self.angle(self.snake.head, self.snake.apple),
                 distances[0], distances[1], distances[2], distances[3])
 
     def draw_game(self):

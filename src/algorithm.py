@@ -34,6 +34,7 @@ def fitness(genome, config):
         game.screen.fill('black')
 
         inputs = game.get_state()
+        # print("Input:", inputs)
         output = net.activate(inputs)
         action = output.index(max(output))
         game.take_action(action)
@@ -44,15 +45,18 @@ def fitness(genome, config):
             game.snake.reset_energy()
             game.snake.add_element()
 
+        modifier = 0 if game.snake.in_bounds() else 1000
+
         if game.snake.energy == 0:
             game.snake.is_alive = False
+            modifier = 500
 
         game.draw_game()
         pygame.display.update()
         game.clock.tick(game.fps)
 
     # Calculate the fitness of the genome
-    fitness_score = game.snake.length * 1000 + game.moves * 1 - game.distance(game.snake.head, game.snake.apple)
+    fitness_score = game.snake.length * 600 + game.moves * 50 - modifier - (game.distance(game.snake.head, game.snake.apple) / 2)
 
     return fitness_score
 
